@@ -46,7 +46,7 @@ A note on source: the structural inspiration for this appendix is **the Course 2
 
 **Nate from n8n** (the official n8n channel) — release-notes-driven content, occasionally tutorial-shaped. Watch for the recap videos at major version releases; skip the marketing-shaped content.
 
-**One independent creator of your choice.** This is the slot the book deliberately leaves blank. Independent n8n creators come and go; the strongest channel in 2026 may not be the strongest in 2028. Look for creators who build *production-shaped* workflows (not demo-shaped), who name trade-offs rather than just showing what works, and who explain *why* a pattern is shaped the way it is. The book's own voice ([CLAUDE.md](../CLAUDE.md)) describes the disposition — find a creator with the same disposition and you'll learn faster than from any list of channels.
+**One independent creator of your choice.** This is the slot the book deliberately leaves blank. Independent n8n creators come and go; the strongest channel in 2026 may not be the strongest in 2028. Look for creators who build *production-shaped* workflows (not demo-shaped), who name trade-offs rather than just showing what works, and who explain *why* a pattern is shaped the way it is — the same disposition this book aims for. Find a creator with that disposition and you'll learn faster than from any list of channels.
 
 ---
 
