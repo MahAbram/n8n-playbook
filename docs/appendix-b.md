@@ -59,7 +59,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Slack channel / DM target for high-scoring leads
 - HubSpot custom field names for `score` and `rationale`
 
-**Import file.** `appendix-b/01-lead-qualification-engine.json`
+**Import file:** [01-lead-qualification-engine.json](/n8n-playbook/workflows/01-lead-qualification-engine.json)
 
 ---
 
@@ -88,7 +88,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The HubSpot fields the workflow writes back to
 - The AI prompt's output schema (which fields you actually want)
 
-**Import file.** `appendix-b/02-inbound-lead-enrichment.json`
+**Import file:** [02-inbound-lead-enrichment.json](/n8n-playbook/workflows/02-inbound-lead-enrichment.json)
 
 ---
 
@@ -118,7 +118,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The deal-stage filter (you may want to exclude *Closed Lost* explicitly)
 - The Slack channel and the schedule time
 
-**Import file.** `appendix-b/03-stalled-deal-surfacing.json`
+**Import file:** [03-stalled-deal-surfacing.json](/n8n-playbook/workflows/03-stalled-deal-surfacing.json)
 
 ---
 
@@ -147,7 +147,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Gmail account the draft goes to (use the BD lead's account if delegating)
 - The transcript source format (Otter, Fireflies, Zoom native have different shapes)
 
-**Import file.** `appendix-b/04-meeting-followup-drafter.json`
+**Import file:** [04-meeting-followup-drafter.json](/n8n-playbook/workflows/04-meeting-followup-drafter.json)
 
 ---
 
@@ -179,7 +179,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The escalation thresholds (urgency + sentiment combination)
 - The Slack channel and the help desk queue mappings
 
-**Import file.** `appendix-b/05-ticket-triage-sentiment-routing.json`
+**Import file:** [05-ticket-triage-sentiment-routing.json](/n8n-playbook/workflows/05-ticket-triage-sentiment-routing.json)
 
 ---
 
@@ -211,7 +211,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The vector store table name and schema
 - The top-K retrieval count (5 is a starting point; tune based on KB density)
 
-**Import file.** `appendix-b/06-knowledge-base-qa-bot.json`
+**Import file:** [06-knowledge-base-qa-bot.json](/n8n-playbook/workflows/06-knowledge-base-qa-bot.json)
 
 ---
 
@@ -243,7 +243,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The ARR floor for inclusion (most teams ignore tiny accounts to focus signal)
 - The usage SQL (must match your data warehouse schema)
 
-**Import file.** `appendix-b/07-at-risk-customer-detection.json`
+**Import file:** [07-at-risk-customer-detection.json](/n8n-playbook/workflows/07-at-risk-customer-detection.json)
 
 ---
 
@@ -275,7 +275,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Wait durations (3-4-7 is a starting point)
 - The milestone check (which CRM field signals "they're set up")
 
-**Import file.** `appendix-b/08-onboarding-email-sequence.json`
+**Import file:** [08-onboarding-email-sequence.json](/n8n-playbook/workflows/08-onboarding-email-sequence.json)
 
 ---
 
@@ -307,7 +307,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Slack approval channel
 - The Xero/QuickBooks bill template (account codes, tax mapping)
 
-**Import file.** `appendix-b/09-invoice-to-ledger-pipeline.json`
+**Import file:** [09-invoice-to-ledger-pipeline.json](/n8n-playbook/workflows/09-invoice-to-ledger-pipeline.json)
 
 ---
 
@@ -337,7 +337,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The category list in the AI prompt (your specific expense categories)
 - The base currency for conversion
 
-**Import file.** `appendix-b/10-receipt-to-spreadsheet.json`
+**Import file:** [10-receipt-to-spreadsheet.json](/n8n-playbook/workflows/10-receipt-to-spreadsheet.json)
 
 ---
 
@@ -369,7 +369,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The email recipients
 - The historical sheet's column structure
 
-**Import file.** `appendix-b/11-cashflow-snapshot-generator.json`
+**Import file:** [11-cashflow-snapshot-generator.json](/n8n-playbook/workflows/11-cashflow-snapshot-generator.json)
 
 ---
 
@@ -400,7 +400,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Slack channel / approver ID
 - The escalation target
 
-**Import file.** `appendix-b/12-vendor-payment-approval.json`
+**Import file:** [12-vendor-payment-approval.json](/n8n-playbook/workflows/12-vendor-payment-approval.json)
 
 ---
 
@@ -435,7 +435,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The approver's Slack ID
 - The timeout duration
 
-**Import file.** `appendix-b/13-broadcast-approval-gate.json`
+**Import file:** [13-broadcast-approval-gate.json](/n8n-playbook/workflows/13-broadcast-approval-gate.json)
 
 ---
 
@@ -465,7 +465,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The number of variants generated (3–4 is the sweet spot)
 - The Slack / Telegram approver
 
-**Import file.** `appendix-b/14-ab-subject-line-variant-generator.json`
+**Import file:** [14-ab-subject-line-variant-generator.json](/n8n-playbook/workflows/14-ab-subject-line-variant-generator.json)
 
 ---
 
@@ -498,7 +498,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Google Drive folder ID
 - The output destination (Notion page vs Google Doc)
 
-**Import file.** `appendix-b/15-content-calendar-assembly.json`
+**Import file:** [15-content-calendar-assembly.json](/n8n-playbook/workflows/15-content-calendar-assembly.json)
 
 ---
 
@@ -530,7 +530,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Wait durations (3-4-N is a starting point)
 - The BD handoff threshold (replies + link clicks both count)
 
-**Import file.** `appendix-b/16-post-event-followup-sequence.json`
+**Import file:** [16-post-event-followup-sequence.json](/n8n-playbook/workflows/16-post-event-followup-sequence.json)
 
 ---
 
@@ -564,7 +564,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Slack channels considered priority
 - The delivery time (match your actual day-start, not aspirational)
 
-**Import file.** `appendix-b/17-personal-daily-briefing-bot.json`
+**Import file:** [17-personal-daily-briefing-bot.json](/n8n-playbook/workflows/17-personal-daily-briefing-bot.json)
 
 ---
 
@@ -594,7 +594,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The summary format (3 sentences is the sweet spot)
 - The destination (Airtable vs Notion vs Google Sheets)
 
-**Import file.** `appendix-b/18-networking-enrichment.json`
+**Import file:** [18-networking-enrichment.json](/n8n-playbook/workflows/18-networking-enrichment.json)
 
 ---
 
@@ -626,7 +626,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The system prompt's ownership-detection rules
 - The "your name" identifier the AI uses to detect when you're the owner
 
-**Import file.** `appendix-b/19-meeting-notes-action-item-extractor.json`
+**Import file:** [19-meeting-notes-action-item-extractor.json](/n8n-playbook/workflows/19-meeting-notes-action-item-extractor.json)
 
 ---
 
@@ -657,7 +657,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The delivery destination (email vs Notion)
 - The cadence (some people prefer this Sunday morning, not Friday evening)
 
-**Import file.** `appendix-b/20-weekend-reading-list-curator.json`
+**Import file:** [20-weekend-reading-list-curator.json](/n8n-playbook/workflows/20-weekend-reading-list-curator.json)
 
 ---
 
