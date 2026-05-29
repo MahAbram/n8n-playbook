@@ -1,0 +1,223 @@
+{
+  "name": "20 \u2014 Weekend Reading List Curator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "4059aa2a-9ef2-4680-bf6e-c0180cd057b2",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                5
+              ],
+              "triggerAtHour": 17
+            }
+          ]
+        }
+      },
+      "id": "7f2736a6-2f47-46d8-8b51-ce9e630495ee",
+      "name": "Schedule (Fri 5PM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://your-feed.example/rss"
+      },
+      "id": "fff1fb07-7218-44f9-a102-0b8531a9c37b",
+      "name": "RSS: week's articles",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.getpocket.example/v3/get"
+      },
+      "id": "7d38ff22-54d5-41f9-b1f9-ca8259d0559b",
+      "name": "HTTP: saved articles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "articles",
+              "stringValue": "={{ JSON.stringify($json) }}"
+            }
+          ]
+        }
+      },
+      "id": "2e45955b-5c1e-4d4b-9639-e4e5f5636594",
+      "name": "Consolidate list",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.articles }}",
+        "options": {
+          "systemMessage": "Rank by likely value to me and output top 5 with one-line summaries. Replace with your specific interests, trusted writers, formats."
+        }
+      },
+      "id": "cd1af16f-cb90-4b8a-8ca1-6baf090689d8",
+      "name": "Rank top 5",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "6b075316-772d-47eb-9e15-ea6c44e67e4a",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "96530f6d-2b61-41af-a487-4b4b20151f4c",
+      "name": "Gmail: send list",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        900,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (Fri 5PM)": {
+      "main": [
+        [
+          {
+            "node": "RSS: week's articles",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: saved articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS: week's articles": {
+      "main": [
+        [
+          {
+            "node": "Consolidate list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: saved articles": {
+      "main": [
+        [
+          {
+            "node": "Consolidate list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidate list": {
+      "main": [
+        [
+          {
+            "node": "Rank top 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank top 5": {
+      "main": [
+        [
+          {
+            "node": "Gmail: send list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rank top 5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

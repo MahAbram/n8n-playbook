@@ -1,0 +1,208 @@
+{
+  "name": "09 \u2014 Invoice-to-Ledger Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "c4912a55-0b3e-44d8-bf58-bc4ac44d3cc0",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "filters": {
+          "labelIds": [
+            "invoices-inbound"
+          ]
+        }
+      },
+      "id": "3fe28086-5750-40f9-a5e7-a2bbb550738a",
+      "name": "Gmail Trigger (invoices)",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf"
+      },
+      "id": "7d6bd98b-9b49-485f-8448-f0b1d5b3a77d",
+      "name": "Extract from PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "vendor_name",
+              "description": "Company that issued the invoice",
+              "required": true
+            },
+            {
+              "name": "invoice_number",
+              "description": "Invoice reference",
+              "required": true
+            },
+            {
+              "name": "total_amount",
+              "description": "Total due as decimal",
+              "required": true
+            },
+            {
+              "name": "currency",
+              "description": "3-letter code e.g. MYR"
+            },
+            {
+              "name": "due_date",
+              "description": "Due date YYYY-MM-DD"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6808b027-2dad-4a5e-adb0-4550cc172611",
+      "name": "Information Extractor",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "dcfa3de6-e28a-4bd0-a1f2-22946f948c7e",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=Approve invoice: {{ $json.output.vendor_name }} {{ $json.output.currency }} {{ $json.output.total_amount }}"
+      },
+      "id": "b87676c4-0661-4e73-b85c-0709a906eebc",
+      "name": "Send & Wait approval (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invoice",
+        "operation": "create"
+      },
+      "id": "13a842b3-3f97-4f6a-bb4d-6281e7661418",
+      "name": "Xero: create draft bill",
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger (invoices)": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Send & Wait approval (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send & Wait approval (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Xero: create draft bill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

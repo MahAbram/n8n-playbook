@@ -1,0 +1,176 @@
+{
+  "name": "06 \u2014 Knowledge-Base Q&A Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP \u2014 RAG Q&A BOT\n\nThis workflow REQUIRES a pre-built vector store. Run an ingestion workflow first (see Chapter 21) to embed your KB articles into Postgres/Supabase pgvector.\n\nThe vector store + embeddings cluster nodes are version-sensitive; if they error on import, re-add them from the node panel. Keep the 'answer from context only / say I don't know' instruction in the system prompt \u2014 it is load-bearing.\n\nReference: Appendix B WF6, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "6a873435-06f0-4290-b83f-3ee650206793",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "path": "kb-question",
+        "httpMethod": "POST"
+      },
+      "id": "9dc8da33-b5a7-447f-9283-8a65316d2b59",
+      "name": "Webhook (question)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "Answer ONLY from the provided context and cite article links. If the documents don't answer the question, write only 'I don't have that information' and stop."
+        }
+      },
+      "id": "56db0d50-614d-4d0f-8baa-f5c130bcd9ee",
+      "name": "KB Answerer (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "107c3217-2cbc-45be-a0ec-0e53f1151d37",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        260,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small"
+      },
+      "id": "0d0d1e57-b555-4a9c-989e-8571285fbf45",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        260,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve",
+        "topK": 5
+      },
+      "id": "070aec66-0c93-44e4-824b-2124df2b208d",
+      "name": "Vector Store (pgvector)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1,
+      "position": [
+        260,
+        520
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d3b7e387-6031-4258-86e2-a49ae8b7512f",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        520,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (question)": {
+      "main": [
+        [
+          {
+            "node": "KB Answerer (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KB Answerer (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "KB Answerer (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Vector Store (pgvector)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store (pgvector)": {
+      "ai_tool": [
+        [
+          {
+            "node": "KB Answerer (AI Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

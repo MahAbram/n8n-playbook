@@ -1,0 +1,200 @@
+{
+  "name": "14 \u2014 A/B Subject-Line Variant Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "f848e0e0-2e61-4f43-a25e-da9ab2eb5f05",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "Campaign brief",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "body"
+            },
+            {
+              "fieldLabel": "audience"
+            },
+            {
+              "fieldLabel": "goal"
+            }
+          ]
+        }
+      },
+      "id": "a5950f76-05b7-4a8a-839e-31051f590538",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "Generate 4 brand-voice subject lines. Replace with 5-10 of your team's best historical subject lines as examples."
+        }
+      },
+      "id": "60b1fa71-df43-4fe2-b26a-b91dcc0cb76f",
+      "name": "Generate 4 subjects",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "8989876f-04a3-495d-b7cc-f2eac87701db",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "[{\"subject\": \"...\", \"rationale\": \"...\"}]"
+      },
+      "id": "59fb54b2-414f-4d66-9242-b4b0f96fcef2",
+      "name": "Variants Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel"
+      },
+      "id": "8554d892-a4b9-4a80-bc1e-fd6dd11b6ad0",
+      "name": "Send & Wait: pick one",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "selected_subject",
+              "stringValue": "={{ $json.choice }}"
+            }
+          ]
+        }
+      },
+      "id": "23ff8b3f-dcda-4339-bd1c-71f0c78253c6",
+      "name": "Record selection",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate 4 subjects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate 4 subjects": {
+      "main": [
+        [
+          {
+            "node": "Send & Wait: pick one",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send & Wait: pick one": {
+      "main": [
+        [
+          {
+            "node": "Record selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate 4 subjects",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variants Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate 4 subjects",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

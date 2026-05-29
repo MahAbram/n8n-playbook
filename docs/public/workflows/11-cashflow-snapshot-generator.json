@@ -1,0 +1,219 @@
+{
+  "name": "11 \u2014 Cashflow Snapshot Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "f12c19e7-9c9c-4553-bdd0-f63b89172312",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "a74612fa-3be1-48e6-ba8f-d61349c1b278",
+      "name": "Schedule (Mon 7AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invoice",
+        "operation": "getAll"
+      },
+      "id": "8c08f40d-42e3-43ca-a55d-4a11a2013b38",
+      "name": "Xero: prior-week txns",
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "charge",
+        "operation": "getAll"
+      },
+      "id": "5f6691d4-77ec-440a-8901-da67dcc70de0",
+      "name": "Stripe: payments",
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        220,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "3ad6b8f4-2afd-40fa-8973-e517b79f1e7b",
+      "name": "Merge streams",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "summary",
+              "stringValue": "=Weekly cashflow snapshot"
+            }
+          ]
+        }
+      },
+      "id": "0b8641bd-9a2c-44b7-9538-a5df34533d3e",
+      "name": "Format summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append"
+      },
+      "id": "651c148d-e67a-4b69-9de0-8f7339e733f8",
+      "name": "Sheets: append history",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "8b2f4121-9c41-47a4-86ef-95223cd2b220",
+      "name": "Gmail: email founder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (Mon 7AM)": {
+      "main": [
+        [
+          {
+            "node": "Xero: prior-week txns",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Stripe: payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xero: prior-week txns": {
+      "main": [
+        [
+          {
+            "node": "Merge streams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe: payments": {
+      "main": [
+        [
+          {
+            "node": "Merge streams",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge streams": {
+      "main": [
+        [
+          {
+            "node": "Format summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format summary": {
+      "main": [
+        [
+          {
+            "node": "Sheets: append history",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: append history": {
+      "main": [
+        [
+          {
+            "node": "Gmail: email founder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

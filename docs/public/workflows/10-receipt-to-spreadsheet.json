@@ -1,0 +1,234 @@
+{
+  "name": "10 \u2014 Receipt-to-Spreadsheet",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "1d5059ef-1e04-4913-ab32-4b6b0e83b8f6",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "filters": {
+          "q": "has:attachment"
+        }
+      },
+      "id": "5d1e63db-b625-4893-be1a-e2c0ad9123c4",
+      "name": "Gmail Trigger (receipts)",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf"
+      },
+      "id": "eebea934-20db-4490-9439-d452bc586e90",
+      "name": "Extract from image (OCR)",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "vendor",
+              "description": "Merchant name",
+              "required": true
+            },
+            {
+              "name": "amount",
+              "description": "Total amount as decimal",
+              "required": true
+            },
+            {
+              "name": "currency",
+              "description": "3-letter code"
+            },
+            {
+              "name": "date",
+              "description": "Receipt date YYYY-MM-DD"
+            },
+            {
+              "name": "category",
+              "description": "Expense category"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "90ebbbda-178f-4ab5-bb0d-309700557c58",
+      "name": "Information Extractor",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "6e6ba222-acba-40c9-a6c7-1e54d1a43496",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "amount_myr",
+              "stringValue": "={{ $json.output.amount }}"
+            }
+          ]
+        }
+      },
+      "id": "0b02b443-79ac-410e-97b9-8d99325d4290",
+      "name": "Compute base currency",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append"
+      },
+      "id": "e243a3e3-aca7-4a53-b086-bc584cbe56f3",
+      "name": "Sheets: append row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "reply"
+      },
+      "id": "3327716f-408c-4c74-a03b-14677ca9a16b",
+      "name": "Gmail: confirm logged",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger (receipts)": {
+      "main": [
+        [
+          {
+            "node": "Extract from image (OCR)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from image (OCR)": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Compute base currency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute base currency": {
+      "main": [
+        [
+          {
+            "node": "Sheets: append row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: append row": {
+      "main": [
+        [
+          {
+            "node": "Gmail: confirm logged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "name": "16 \u2014 Post-Event Follow-Up Sequence",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "febd4132-ad8c-4fdd-a291-230ecee3c856",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ae4c530a-43bf-4cfa-978e-1757ad9b22fa",
+      "name": "Manual / Zoom trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.attended }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "showed"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "2384ff8f-3afd-42ef-8547-f7380999abb6",
+      "name": "Attended?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "cc1ecb06-f9a9-4506-a0eb-416f3c224ae6",
+      "name": "Email 1 (recording+CTA)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "4119eea1-e3da-439b-ac15-0b543163abe1",
+      "name": "Wait 3 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "ccad3505-e7f5-44ce-93cb-1ce3372f5147",
+      "name": "Email 2 (related content)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 4,
+        "unit": "days"
+      },
+      "id": "4fed762a-57e9-4437-a397-cb3fa6973a1a",
+      "name": "Wait 4 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "049ac9bc-aaa3-4d87-b7ef-14f98534c3ab",
+      "name": "Email 3 (soft pitch)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Manual / Zoom trigger": {
+      "main": [
+        [
+          {
+            "node": "Attended?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attended?": {
+      "main": [
+        [
+          {
+            "node": "Email 1 (recording+CTA)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email 1 (recording+CTA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email 1 (recording+CTA)": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 days": {
+      "main": [
+        [
+          {
+            "node": "Email 2 (related content)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email 2 (related content)": {
+      "main": [
+        [
+          {
+            "node": "Wait 4 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 4 days": {
+      "main": [
+        [
+          {
+            "node": "Email 3 (soft pitch)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "name": "18 \u2014 Networking Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "63e5a27b-69b2-4540-b68e-f4b1dd6b21ab",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "path": "new-contact",
+        "httpMethod": "POST"
+      },
+      "id": "a424442a-544d-4223-ada6-89e4f082cc06",
+      "name": "Email/Webhook (contact card)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "name",
+              "stringValue": "={{ $json.body.name }}"
+            },
+            {
+              "name": "company",
+              "stringValue": "={{ $json.body.company }}"
+            }
+          ]
+        }
+      },
+      "id": "f1ecc5f4-273d-4cb1-92b0-8676fcfd6b7d",
+      "name": "Extract card fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.your-enrichment-provider.example/person?name={{ $json.name }}"
+      },
+      "id": "7a5f77fc-8163-47ff-bf54-fc1098650705",
+      "name": "HTTP: public lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "Write a 3-sentence brief: meeting context, likely interests, common ground."
+        }
+      },
+      "id": "657f6bd4-b8e1-4891-8131-a91350b64a80",
+      "name": "3-sentence brief",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "a09875d4-de6a-4b18-b0f9-c14eaf2308ef",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create"
+      },
+      "id": "3ddbab40-3980-41cd-b505-2f8bc2caa474",
+      "name": "Airtable: write record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        900,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Email/Webhook (contact card)": {
+      "main": [
+        [
+          {
+            "node": "Extract card fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract card fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP: public lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: public lookup": {
+      "main": [
+        [
+          {
+            "node": "3-sentence brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3-sentence brief": {
+      "main": [
+        [
+          {
+            "node": "Airtable: write record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "3-sentence brief",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

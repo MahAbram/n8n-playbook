@@ -1,0 +1,179 @@
+{
+  "name": "03 \u2014 Stalled Deal Surfacing",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "0d155244-b6d7-4018-95b4-39d2dc0ce69c",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "8e34711b-4e4f-4754-8e6d-170601f1c46a",
+      "name": "Schedule (Mon 8AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": true
+      },
+      "id": "305fefa4-a08a-4799-b430-b7fc0620dc52",
+      "name": "HubSpot: get open deals",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.days_since_last_activity }}",
+              "rightValue": 14,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        }
+      },
+      "id": "92fb730d-e5c2-4adc-b1cd-53a7e68701f2",
+      "name": "Stale > 14 days",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "line",
+              "stringValue": "={{ $json.properties.dealname }} \u2014 RM {{ $json.properties.amount }} ({{ $json.properties.hubspot_owner_id }})"
+            }
+          ]
+        }
+      },
+      "id": "e5cb9b77-5ea0-45ba-ad75-f72aa024f996",
+      "name": "Format digest",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=Stalled deals this week:\n{{ $json.line }}"
+      },
+      "id": "6f3bcb1c-b375-4b4d-85e7-d59f77a19aaf",
+      "name": "Slack: post digest",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (Mon 8AM)": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: get open deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: get open deals": {
+      "main": [
+        [
+          {
+            "node": "Stale > 14 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stale > 14 days": {
+      "main": [
+        [
+          {
+            "node": "Format digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format digest": {
+      "main": [
+        [
+          {
+            "node": "Slack: post digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

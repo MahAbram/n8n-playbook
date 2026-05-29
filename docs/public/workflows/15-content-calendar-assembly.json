@@ -1,0 +1,218 @@
+{
+  "name": "15 \u2014 Content Calendar Assembly",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "7d2c926e-7b1b-4a39-9cd5-b6913fc97b06",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "5bd3e9c1-6e2c-44ea-870f-50110f27794c",
+      "name": "Schedule (Mon 7AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll"
+      },
+      "id": "9026a478-0e39-4fe9-814a-1f8b6eb1156a",
+      "name": "Notion: week's drafts",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll"
+      },
+      "id": "ca8e3878-c56a-427d-95a2-f46900e6409c",
+      "name": "Slack: briefs channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        220,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "list"
+      },
+      "id": "73c1fff0-c697-4a38-93c1-ef3958a6498f",
+      "name": "Drive: new assets",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        220,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "747c13ab-1860-433e-ad89-841650785c1d",
+      "name": "Merge sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        440,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create"
+      },
+      "id": "8c64fac2-e846-4964-9f7b-e9f3e19c0d47",
+      "name": "Notion: This Week page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        660,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel"
+      },
+      "id": "8a6df2f5-3c70-4279-ab04-9dff0a3fb8ce",
+      "name": "Slack: post link",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        880,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (Mon 7AM)": {
+      "main": [
+        [
+          {
+            "node": "Notion: week's drafts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack: briefs channel",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Drive: new assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion: week's drafts": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: briefs channel": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Drive: new assets": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge sources": {
+      "main": [
+        [
+          {
+            "node": "Notion: This Week page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion: This Week page": {
+      "main": [
+        [
+          {
+            "node": "Slack: post link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

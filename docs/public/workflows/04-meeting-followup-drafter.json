@@ -1,0 +1,130 @@
+{
+  "name": "04 \u2014 Meeting Follow-Up Drafter",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "79efe99e-dda1-4da2-b421-b1d79439f5f1",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "path": "meeting-transcript",
+        "httpMethod": "POST"
+      },
+      "id": "754312d8-cf96-46f8-862b-ee8f11f42a7b",
+      "name": "Webhook (transcript)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.transcript }}",
+        "options": {
+          "systemMessage": "Draft a follow-up email: summary, decisions made, next steps with owners. Match the user's tone \u2014 replace this with 3-5 examples of past follow-ups."
+        }
+      },
+      "id": "902fb9dc-e1de-4f9a-940a-6b264c5a991c",
+      "name": "Draft follow-up",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "7bd9b523-deda-4b8a-861d-867716960d37",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "operation": "create"
+      },
+      "id": "6eeb9679-465b-4e53-9313-fd16eeea66b0",
+      "name": "Gmail: create draft",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        460,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (transcript)": {
+      "main": [
+        [
+          {
+            "node": "Draft follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft follow-up": {
+      "main": [
+        [
+          {
+            "node": "Gmail: create draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft follow-up",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

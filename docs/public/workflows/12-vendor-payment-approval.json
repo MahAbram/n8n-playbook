@@ -1,0 +1,237 @@
+{
+  "name": "12 \u2014 Vendor Payment Approval",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "b0df7ec8-5748-4219-b45c-6b868d682d12",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "f2dc0c54-b6c3-4dec-aaba-f4c4cda81ab6",
+      "name": "Schedule (poll bills)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "awaiting_approval",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "b9a0c842-89cd-4e79-b837-0a9e10bc3f59",
+      "name": "Awaiting approval",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "msg",
+              "stringValue": "=Approve payment: {{ $json.vendor }} RM {{ $json.amount }}"
+            }
+          ]
+        }
+      },
+      "id": "e21af3b1-54fc-4edd-9e4f-720ac8c3c5d4",
+      "name": "Format approval msg",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel"
+      },
+      "id": "ec0ee7d6-d28b-44ea-9596-01d13e847ae8",
+      "name": "Send & Wait approval",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.approved }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "approve"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "4bc4f507-ec9c-43ee-80f5-3916b113236e",
+      "name": "On response",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invoice",
+        "operation": "update"
+      },
+      "id": "bd93e634-bd97-44f5-939a-dad9c210015a",
+      "name": "Xero: mark approved",
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "720bc985-dadb-479b-87b2-234b61828396",
+      "name": "Log held",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (poll bills)": {
+      "main": [
+        [
+          {
+            "node": "Awaiting approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Awaiting approval": {
+      "main": [
+        [
+          {
+            "node": "Format approval msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format approval msg": {
+      "main": [
+        [
+          {
+            "node": "Send & Wait approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send & Wait approval": {
+      "main": [
+        [
+          {
+            "node": "On response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On response": {
+      "main": [
+        [
+          {
+            "node": "Xero: mark approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log held",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

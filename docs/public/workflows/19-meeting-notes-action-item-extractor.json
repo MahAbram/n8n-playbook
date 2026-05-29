@@ -1,0 +1,261 @@
+{
+  "name": "19 \u2014 Meeting-Notes Action-Item Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "6eddc31d-94d6-4218-a98e-f61681f33407",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "Meeting notes",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "transcript"
+            }
+          ]
+        }
+      },
+      "id": "6387ec9b-414a-471d-a66f-01e3e2cfa850",
+      "name": "Form (paste transcript)",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.transcript }}",
+        "options": {
+          "systemMessage": "Extract action items as an array: task, owner, due_date, source_context, ownership_certainty. When ownership is unclear, mark it 'unclear' \u2014 do not guess."
+        }
+      },
+      "id": "ffb4850a-394b-46e4-bec0-31391ad61864",
+      "name": "Extract action items",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "9edd291e-85f7-4a33-9c99-c06ece738035",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "[{\"task\": \"...\", \"owner\": \"...\", \"due_date\": \"...\", \"ownership_certainty\": \"clear\"}]"
+      },
+      "id": "db63fdc0-97bc-4db7-b237-85017e298574",
+      "name": "Action Items Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.owner }}",
+                    "rightValue": "me",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "you"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.ownership_certainty }}",
+                    "rightValue": "unclear",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "unclear"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "065a3556-25a4-47d4-8494-1d0eb0d7b086",
+      "name": "Route by owner",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create"
+      },
+      "id": "a270d411-34b9-43e3-899c-4592de4eaeba",
+      "name": "Todoist: create task",
+      "type": "n8n-nodes-base.todoist",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append"
+      },
+      "id": "24efd73b-839f-4d6f-81f5-56e7dfce5f0f",
+      "name": "Sheet: needs-communicating",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append"
+      },
+      "id": "7a4235bf-a7b1-496b-8dc8-bfbf2b808a17",
+      "name": "Sheet: follow-up-with-host",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        660,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Form (paste transcript)": {
+      "main": [
+        [
+          {
+            "node": "Extract action items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract action items": {
+      "main": [
+        [
+          {
+            "node": "Route by owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by owner": {
+      "main": [
+        [
+          {
+            "node": "Todoist: create task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheet: follow-up-with-host",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheet: needs-communicating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract action items",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Items Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extract action items",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

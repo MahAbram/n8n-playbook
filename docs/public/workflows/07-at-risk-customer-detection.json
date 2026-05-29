@@ -1,0 +1,200 @@
+{
+  "name": "07 \u2014 At-Risk Customer Detection",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "aba61bb3-4c7f-4d09-9ae3-7518f8947aa7",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "f7051384-0891-4a77-8dbf-6ebbe19bf396",
+      "name": "Schedule (daily 7AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT account_id, current_week, previous_week FROM usage WHERE previous_week > 0 AND current_week::float/previous_week < 0.6"
+      },
+      "id": "ba252b70-402b-4edf-ad6d-380af3c62742",
+      "name": "Postgres: usage drops",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "company",
+        "operation": "getAll"
+      },
+      "id": "8b6bdfa0-bd40-4fe0-82f6-1d3853a1ae17",
+      "name": "HubSpot: account context",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "account_id",
+              "field2": "account_id"
+            }
+          ]
+        }
+      },
+      "id": "def169eb-f0ea-4d55-9be4-09fd9484a813",
+      "name": "Merge on account_id",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.arr }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        }
+      },
+      "id": "d1d2112d-9b64-4f38-98b0-78e453cefb48",
+      "name": "ARR floor",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=At-risk accounts today: {{ $json.account_id }}"
+      },
+      "id": "90d61085-d4f5-48d8-9e4b-e1c490e9c854",
+      "name": "Slack: at-risk list",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (daily 7AM)": {
+      "main": [
+        [
+          {
+            "node": "Postgres: usage drops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres: usage drops": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: account context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: account context": {
+      "main": [
+        [
+          {
+            "node": "Merge on account_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge on account_id": {
+      "main": [
+        [
+          {
+            "node": "ARR floor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ARR floor": {
+      "main": [
+        [
+          {
+            "node": "Slack: at-risk list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

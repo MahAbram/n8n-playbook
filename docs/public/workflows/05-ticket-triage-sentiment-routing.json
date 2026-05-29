@@ -1,0 +1,242 @@
+{
+  "name": "05 \u2014 Ticket Triage with Sentiment Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "b635188e-0ca5-47d8-8a24-72ffe6b7ee66",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2474683d-a115-4b36-bb24-09f517ce8e88",
+      "name": "Email Trigger",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.subject }}\n\n{{ $json.textPlain }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Billing",
+              "description": "Payment, invoice, refund issues"
+            },
+            {
+              "category": "Technical",
+              "description": "Bugs, errors, how-to"
+            },
+            {
+              "category": "Account",
+              "description": "Login, settings, access"
+            },
+            {
+              "category": "Other",
+              "description": "Anything else"
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other"
+        }
+      },
+      "id": "4f67d597-ef25-4d3a-9df2-6388969852ac",
+      "name": "Classify category",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.textPlain }}",
+        "options": {}
+      },
+      "id": "fb6a451a-e993-4c9b-ab58-5396e3497906",
+      "name": "Sentiment",
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "6bc29e97-85fc-450f-85d2-0068297f9c99",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.sentiment }}",
+                    "rightValue": "Negative",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "escalate"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "e9b0b4f8-92b5-49a7-900f-3c3b2f2f25e4",
+      "name": "Route on sentiment",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        680,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=Negative ticket: {{ $json.subject }}"
+      },
+      "id": "0b0a4117-5cef-483d-9553-78cb36fc1503",
+      "name": "Slack: escalation",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        900,
+        -80
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a8ff5544-b30c-4aef-821a-5f0a86363eaa",
+      "name": "Standard queue",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "Email Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify category": {
+      "main": [
+        [
+          {
+            "node": "Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Route on sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route on sentiment": {
+      "main": [
+        [
+          {
+            "node": "Slack: escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify category",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Sentiment",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

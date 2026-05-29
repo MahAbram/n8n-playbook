@@ -1,0 +1,192 @@
+{
+  "name": "08 \u2014 Onboarding Email Sequence",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "b52ad18e-fac5-43ba-846d-47dc332897ec",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "eventsUi": {
+          "eventValues": [
+            {
+              "name": "contact.creation"
+            }
+          ]
+        }
+      },
+      "id": "e6478cb0-814a-408a-8999-66ce723b68e4",
+      "name": "HubSpot Trigger (new customer)",
+      "type": "n8n-nodes-base.hubspotTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "1c4dbe90-72ce-41df-b341-aff5a208d844",
+      "name": "Gmail: welcome",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "f117e27a-6028-4a30-b9f5-a192576957e9",
+      "name": "Wait 3 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "get"
+      },
+      "id": "8ca51a7d-ad88-436c-9316-c25d6e51e73e",
+      "name": "HubSpot: check setup",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.properties.setup_complete }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "92ca05c4-b2c7-4cba-ad37-27e8102af926",
+      "name": "Setup complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "3f00e047-1cd7-46f5-b62e-10464eee2997",
+      "name": "Gmail: setup check",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "HubSpot Trigger (new customer)": {
+      "main": [
+        [
+          {
+            "node": "Gmail: welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail: welcome": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 days": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: check setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: check setup": {
+      "main": [
+        [
+          {
+            "node": "Setup complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setup complete?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gmail: setup check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

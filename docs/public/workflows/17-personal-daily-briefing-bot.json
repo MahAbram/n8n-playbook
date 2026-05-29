@@ -1,0 +1,249 @@
+{
+  "name": "17 \u2014 Personal Daily Briefing Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "37ff7156-b725-44b3-b13e-e69993e0c715",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 6,
+              "triggerAtMinute": 50
+            }
+          ]
+        }
+      },
+      "id": "215f32d4-0702-4d8c-80d3-50deb88d6269",
+      "name": "Schedule (6:50AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {}
+      },
+      "id": "0a3a16fd-ad31-4c27-a067-5412e1b7052f",
+      "name": "Google Calendar: today",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Kuala%20Lumpur&units=metric&appid=YOUR_KEY"
+      },
+      "id": "5dfd0e20-171e-4902-8cb5-c0724f946822",
+      "name": "HTTP: OpenWeather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://your-trusted-feed.example/rss"
+      },
+      "id": "5559880a-42a4-4079-96b7-482260016460",
+      "name": "RSS: headlines",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        220,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll"
+      },
+      "id": "00b5717a-8030-4b0c-85ac-bc092fa929ed",
+      "name": "Slack: priority msgs",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        220,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Calendar/weather/news/messages context",
+        "options": {
+          "systemMessage": "Format a concise one-page morning brief: 3 calendar items, weather one-liner, 2 headlines, top 3 messages. Plain text."
+        }
+      },
+      "id": "4b359ad8-9ef9-4de0-ae72-355ef16706c3",
+      "name": "Synthesize brief",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "2fc755e5-6ad9-4e35-a1a8-31be68b571ac",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send"
+      },
+      "id": "38dc099b-76e7-43c5-a354-08df48e03b5f",
+      "name": "Gmail: send brief",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule (6:50AM)": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar: today",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: OpenWeather",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS: headlines",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack: priority msgs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar: today": {
+      "main": [
+        [
+          {
+            "node": "Synthesize brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: OpenWeather": {
+      "main": [
+        [
+          {
+            "node": "Synthesize brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS: headlines": {
+      "main": [
+        [
+          {
+            "node": "Synthesize brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: priority msgs": {
+      "main": [
+        [
+          {
+            "node": "Synthesize brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthesize brief": {
+      "main": [
+        [
+          {
+            "node": "Gmail: send brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Synthesize brief",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

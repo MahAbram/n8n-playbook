@@ -1,0 +1,285 @@
+{
+  "name": "01 \u2014 Lead Qualification Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "94b06450-9882-4461-bfeb-b13924231084",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "eventsUi": {
+          "eventValues": [
+            {
+              "name": "contact.creation"
+            }
+          ]
+        }
+      },
+      "id": "6d0b269c-d43c-48ca-87c1-4f0b9f9c55d3",
+      "name": "HubSpot Trigger",
+      "type": "n8n-nodes-base.hubspotTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "name",
+              "stringValue": "={{ $json.properties.firstname }} {{ $json.properties.lastname }}"
+            },
+            {
+              "name": "company",
+              "stringValue": "={{ $json.properties.company }}"
+            },
+            {
+              "name": "message",
+              "stringValue": "={{ $json.properties.message }}"
+            }
+          ]
+        }
+      },
+      "id": "134bf62e-692d-4812-9bd6-ab36e3e150fc",
+      "name": "Extract scoring inputs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "You score inbound B2B leads 1-10 against our ideal customer profile. Replace this with your ICP definition, with examples of each score level. Return score, rationale, and top_signals."
+        }
+      },
+      "id": "ebf1401d-a07a-4f7b-9b20-8c3bbac607cb",
+      "name": "Lead Scorer (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "1a93d0ba-1a4f-4931-aa56-c484e2150886",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\"score\": 7, \"rationale\": \"active deal stage, decision-maker\", \"top_signals\": [\"explicit meeting request\"]}"
+      },
+      "id": "d1ef1096-ff0b-4c6b-aee8-1bddd27c8dd7",
+      "name": "Score Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.score }}",
+                    "rightValue": 7,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "high"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.score }}",
+                    "rightValue": 4,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "medium"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "807edfac-fcf4-4142-9cfa-0aaca8a65a5c",
+      "name": "Route by score",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update"
+      },
+      "id": "3f16ea25-2446-4d66-b46c-eaa4167db9cb",
+      "name": "HubSpot: write score",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=New high-value lead: {{ $json.name }} \u2014 score {{ $json.output.score }}"
+      },
+      "id": "1b59b963-2592-4145-bf9f-13bd66526e9e",
+      "name": "Slack DM to BD lead",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "HubSpot Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract scoring inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract scoring inputs": {
+      "main": [
+        [
+          {
+            "node": "Lead Scorer (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scorer (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Route by score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by score": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: write score",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack DM to BD lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Scorer (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Lead Scorer (AI Agent)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

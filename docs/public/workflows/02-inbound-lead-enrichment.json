@@ -1,0 +1,197 @@
+{
+  "name": "02 \u2014 Inbound Lead Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "5abb1f8b-4c4c-42c7-a70d-fa96ea82aed6",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "eventsUi": {
+          "eventValues": [
+            {
+              "name": "contact.creation"
+            }
+          ]
+        }
+      },
+      "id": "570a66d1-2af4-4034-a42e-2dc64e1d366f",
+      "name": "HubSpot Trigger",
+      "type": "n8n-nodes-base.hubspotTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.properties.company }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "1fc8e6d0-af5f-4f02-90ea-4b7e238c1265",
+      "name": "Missing company?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.your-enrichment-provider.example/v1/enrich?email={{ $json.properties.email }}",
+        "authentication": "genericCredentialType"
+      },
+      "id": "2d9bf243-a4d6-42d6-8bef-a42053ea912d",
+      "name": "Enrichment API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "Synthesize raw enrichment data into clean fields: company, industry, employee_count, one_line_brief."
+        }
+      },
+      "id": "a3508c2c-bf35-4307-8e80-89e085c020c9",
+      "name": "Synthesize enrichment",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        660,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "dcb825b3-877f-4cb9-8940-450e7a88c137",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update"
+      },
+      "id": "8b07ff3c-fea4-49ea-974b-edf12be291db",
+      "name": "HubSpot: update contact",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        900,
+        -80
+      ]
+    }
+  ],
+  "connections": {
+    "HubSpot Trigger": {
+      "main": [
+        [
+          {
+            "node": "Missing company?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Missing company?": {
+      "main": [
+        [
+          {
+            "node": "Enrichment API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Enrichment API": {
+      "main": [
+        [
+          {
+            "node": "Synthesize enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Synthesize enrichment": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: update contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Synthesize enrichment",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}

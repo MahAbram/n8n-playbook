@@ -1,0 +1,226 @@
+{
+  "name": "13 \u2014 Broadcast Approval Gate",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "SETUP\n\n1. This workflow imports inactive. Walk every node, attach your own credentials (none are included \u2014 n8n never exports secrets), then run a manual execution with test data before activating.\n\n2. Placeholder values (channel names, table IDs, URLs, prompts) need replacing with yours \u2014 see the README in Appendix B.\n\n3. AI / vector nodes may need a typeVersion nudge on import depending on your installed n8n version; if a node shows an error on import, delete and re-add it from the node panel.\n\nReference: Appendix B, Learn Automation Working.",
+        "height": 420,
+        "width": 380,
+        "color": 4
+      },
+      "id": "3c9d81f3-7149-4099-9e7c-6774c3214c0f",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -40
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5d6c0ef0-3f1d-4024-a40c-4e43e54accb4",
+      "name": "Schedule / Form trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "fields": {
+          "values": [
+            {
+              "name": "subject",
+              "stringValue": "Campaign subject"
+            },
+            {
+              "name": "recipient_count",
+              "stringValue": "12000"
+            },
+            {
+              "name": "preview_url",
+              "stringValue": "https://your-host.example/preview/123"
+            }
+          ]
+        }
+      },
+      "id": "5a5c2739-5416-4a6e-83b9-2e6f78b9936b",
+      "name": "Consolidate campaign",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upload"
+      },
+      "id": "0b281944-170c-40b5-abb1-096ae00cee8a",
+      "name": "Upload preview (Drive)",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "text": "=Campaign ready: {{ $json.subject }} to {{ $json.recipient_count }}. Preview: {{ $json.preview_url }}"
+      },
+      "id": "de7485a9-f629-4650-b322-241bf153f890",
+      "name": "Send & Wait approval",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.approved }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "outputKey": "approve"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "c25ee794-6c53-4c36-8aca-f148d7877911",
+      "name": "Approve / Reject / Timeout",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "38b163b0-422f-4248-8fa9-93e02d37cd3e",
+      "name": "ESP: send to list",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append"
+      },
+      "id": "db83c4f8-b616-4d84-8b0a-f5e6ca5002ee",
+      "name": "Sheets: not-sent log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1100,
+        80
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule / Form trigger": {
+      "main": [
+        [
+          {
+            "node": "Consolidate campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidate campaign": {
+      "main": [
+        [
+          {
+            "node": "Upload preview (Drive)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload preview (Drive)": {
+      "main": [
+        [
+          {
+            "node": "Send & Wait approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send & Wait approval": {
+      "main": [
+        [
+          {
+            "node": "Approve / Reject / Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve / Reject / Timeout": {
+      "main": [
+        [
+          {
+            "node": "ESP: send to list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets: not-sent log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "appendix-b"
+    }
+  ]
+}
