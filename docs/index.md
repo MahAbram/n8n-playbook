@@ -2,22 +2,22 @@
 layout: home
 
 hero:
-  name: "AI Integration Playbook"
-  text: "A Playbook for the Modern Professional"
-  tagline: "Evolving from a chatbot user to a workflow systems architect."
+  name: "Learn Automation Working"
+  text: "A practical, open-source playbook on n8n"
+  tagline: "Shipping real workflows with n8n."
   actions:
     - theme: brand
       text: Start Here →
       link: /start-here
     - theme: alt
       text: View on GitHub
-      link: https://github.com/MahAbram/ai-integration-playbook
+      link: https://github.com/MahAbram/n8n-playbook
 
 features:
-  - title: Multi-Modal Mastery
+  - title: Replace
     details: No Python, no jargon. Written for HR leads, analysts, ops managers, and marketers.
-  - title: Plug-and-Play Pipelines
+  - title: Replace
     details: A repeatable methodology — Context, Clarity, Constraint, Content — for boardroom-ready results.
-  - title: The Multi-Model Strategy
+  - title: Replace
     details: Compare ChatGPT, Claude, Gemini, and Copilot against your own real work.
 ---
