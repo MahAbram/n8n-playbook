@@ -114,7 +114,7 @@ Layer 1 used the Calculator. Real workflows use more interesting tools. The Tool
 
 - **HTTP Request Tool** — lets the agent call any HTTP API. Pair with Chapter 18's work and the agent can hit Clearbit, your own internal API, anything addressable.
 - **Workflow Tool** — lets the agent call another n8n workflow as a tool. Useful for encapsulating multi-step actions ("look up a customer record, format it, return") behind a single tool call.
-- **App tool nodes** — most app nodes (Google Sheets, Slack, Notion, HubSpot) can be exposed as a tool the agent decides when to use. The exact name in the menu is *<App> Tool* or appears under the agent's *+ Tool* picker.
+- **App tool nodes** — most app nodes (Google Sheets, Slack, Notion, HubSpot) can be exposed as a tool the agent decides when to use. The exact name in the menu is `<App> Tool` or appears under the agent's *+ Tool* picker.
 
 When you wire up a tool, each of its parameters can be populated in two ways: by you (with an expression like `{{ $json.email }}`, the same syntax from Chapter 12), or **by the agent itself, at runtime**, using the `$fromAI()` function.
 
