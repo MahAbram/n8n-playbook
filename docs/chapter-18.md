@@ -28,7 +28,7 @@ When you add an HTTP Request node and set its **Authentication** field, you see 
 
 **Header Auth** — the most common pattern, covering both API keys and bearer tokens. The API documentation tells you to send a particular header on every request — `Authorization: Bearer sk_live_abc123`, or `X-API-Key: abc123`, or whatever variant the service prefers. In n8n, set Generic Auth Type to *Header Auth*, supply the header **Name** (e.g., `Authorization`) and **Value** (e.g., `Bearer sk_live_abc123`).
 
-A quirk worth knowing from the canonical docs: n8n's *Bearer Auth* credential type is "actually just header authentication with the Name set to Authorization and the Value set to Bearer <token>." So if you see *Bearer Auth* as an option, you can use it — it's a one-field shortcut for the most common Header Auth variant. Same mechanism, less typing.
+A quirk worth knowing from the canonical docs: n8n's *Bearer Auth* credential type is "actually just header authentication with the Name set to Authorization and the Value set to `Bearer <token>`." So if you see *Bearer Auth* as an option, you can use it — it's a one-field shortcut for the most common Header Auth variant. Same mechanism, less typing.
 
 **OAuth2** — the heaviest setup, deepest integration. Used by Google, Microsoft, Salesforce, HubSpot, and most modern SaaS that needs scoped per-user access rather than a static API key. Five OAuth2 *grant types* exist; for n8n workflows you'll see two:
 
