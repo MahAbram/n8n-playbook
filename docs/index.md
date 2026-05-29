@@ -3,12 +3,12 @@ layout: home
 
 hero:
   name: "Learn Automation Working"
-  text: "A practical, open-source playbook on n8n"
+  text: "A practical, open-source playbook"
   tagline: "Shipping real workflows with n8n."
   actions:
     - theme: brand
       text: Start Here →
-      link: /start-here
+      link: /chapter-01
     - theme: alt
       text: View on GitHub
       link: https://github.com/MahAbram/n8n-playbook
