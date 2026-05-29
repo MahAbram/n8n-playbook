@@ -6,14 +6,6 @@ export default defineConfig({
   base: '/n8n-playbook/',
   appearance: 'dark',
 
-  vue: {
-  template: {
-    compilerOptions: {
-      delimiters: ['[[__NOOP__', '__NOOP__]]']
-      }
-    }
-  },
-
   themeConfig: {
 
     // ── TOP NAV ──────────────────────────────────────────────────
@@ -143,4 +135,30 @@ export default defineConfig({
       copyright: 'Copyright © 2026 MahAbram'
     }
   }
+
+markdown: {
+    config: (md) => {
+      // 1. Save the default markdown text renderer
+      const defaultTextRule = md.renderer.rules.text || function (tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options)
+      }
+
+      // 2. Override it with our custom logic
+      md.renderer.rules.text = function (tokens, idx, options, env, self) {
+        const content = tokens[idx].content
+        
+        // 3. If standard text contains an n8n expression bracket...
+        if (content.includes('{{')) {
+          // Escape the HTML for safety, then wrap the exact {{ ... }} match in a v-pre span.
+          return md.utils.escapeHtml(content)
+            .replace(/(\{\{[\s\S]*?\}\})/g, '<span v-pre>$1</span>')
+        }
+        
+        // 4. Otherwise, render text exactly as normal
+        return defaultTextRule(tokens, idx, options, env, self)
+      }
+    }
+  }
+})
+
 })
