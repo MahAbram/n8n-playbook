@@ -6,6 +6,14 @@ export default defineConfig({
   base: '/n8n-playbook/',
   appearance: 'dark',
 
+  vue: {
+  template: {
+    compilerOptions: {
+      delimiters: ['[[__NOOP__', '__NOOP__]]']
+      }
+    }
+  },
+
   themeConfig: {
 
     // ── TOP NAV ──────────────────────────────────────────────────
