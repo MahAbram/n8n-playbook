@@ -138,24 +138,30 @@ export default defineConfig({
 
 markdown: {
     config: (md) => {
-      // 1. Save the default markdown text renderer
+      // 1. Protect plain text containing {{
       const defaultTextRule = md.renderer.rules.text || function (tokens, idx, options, env, self) {
         return self.renderToken(tokens, idx, options)
       }
-
-      // 2. Override it with our custom logic
       md.renderer.rules.text = function (tokens, idx, options, env, self) {
         const content = tokens[idx].content
-        
-        // 3. If standard text contains an n8n expression bracket...
         if (content.includes('{{')) {
-          // Escape the HTML for safety, then wrap the exact {{ ... }} match in a v-pre span.
           return md.utils.escapeHtml(content)
             .replace(/(\{\{[\s\S]*?\}\})/g, '<span v-pre>$1</span>')
         }
-        
-        // 4. Otherwise, render text exactly as normal
         return defaultTextRule(tokens, idx, options, env, self)
+      }
+
+      // 2. Protect inline code blocks containing {{
+      const defaultCodeInlineRule = md.renderer.rules.code_inline || function (tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options)
+      }
+      md.renderer.rules.code_inline = function (tokens, idx, options, env, self) {
+        const content = tokens[idx].content
+        if (content.includes('{{')) {
+          // Explicitly wrap the inline code in a v-pre tag so Vue ignores it
+          return `<code v-pre>${md.utils.escapeHtml(content)}</code>`
+        }
+        return defaultCodeInlineRule(tokens, idx, options, env, self)
       }
     }
   }
