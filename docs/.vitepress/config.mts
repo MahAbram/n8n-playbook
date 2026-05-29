@@ -134,7 +134,7 @@ export default defineConfig({
       message: 'Released under CC BY 4.0.',
       copyright: 'Copyright © 2026 MahAbram'
     }
-  }
+  },
 
 markdown: {
     config: (md) => {
