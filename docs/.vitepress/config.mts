@@ -6,6 +6,10 @@ export default defineConfig({
   base: '/n8n-playbook/',
   appearance: 'dark',
 
+  ignoreDeadLinks: [
+    /^\/n8n-playbook\/workflows\//
+  ],
+
   themeConfig: {
 
     // ── TOP NAV ──────────────────────────────────────────────────
