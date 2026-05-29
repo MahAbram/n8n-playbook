@@ -59,7 +59,7 @@ The twenty workflows are organised by Part V role: BD, CS, finance/ops, marketin
 - The Slack channel / DM target for high-scoring leads
 - HubSpot custom field names for `score` and `rationale`
 
-**Import file:** [01-lead-qualification-engine.json](/n8n-playbook/workflows/01-lead-qualification-engine.json)
+**Import file:** [01-lead-qualification-engine.json](/workflows/01-lead-qualification-engine.json)
 
 ---
 
