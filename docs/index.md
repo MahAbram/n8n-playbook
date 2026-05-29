@@ -14,10 +14,10 @@ hero:
       link: https://github.com/MahAbram/n8n-playbook
 
 features:
-  - title: Replace
-    details: No Python, no jargon. Written for HR leads, analysts, ops managers, and marketers.
-  - title: Replace
-    details: A repeatable methodology — Context, Clarity, Constraint, Content — for boardroom-ready results.
-  - title: Replace
-    details: Compare ChatGPT, Claude, Gemini, and Copilot against your own real work.
+  - title: Built for the non-technical
+    details: No code, no API docs, no JSON by hand - written for everyday folk.
+  - title: Patterns, not toys
+    details: Twenty canonical role workflows and a 10-minute first win. Every example is real, importable, and shippable.
+  - title: Ship and watch
+    details: Activate against real data, watch the Executions log, fix what breaks.
 ---
