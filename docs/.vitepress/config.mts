@@ -38,12 +38,6 @@ export default defineConfig({
     // ── SIDEBAR ──────────────────────────────────────────────────
     sidebar: [
       {
-        text: 'Getting Started',
-        items: [
-          { text: 'Start Here', link: '/start-here' },
-        ]
-      },
-      {
         text: 'Part I: Foundations',
         collapsed: false,
         items: [
