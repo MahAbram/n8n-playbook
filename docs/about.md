@@ -26,7 +26,7 @@ We use **n8n** as the main running example because it's the deepest, most flexib
 
 ## How to read this book
 
-> **Don't try to learn all of this before you start.** A 31-chapter table of contents can be intimidating — sub-workflows, error handlers, queueing, self-hosted Docker deployments, multi-step AI agents — and the natural reaction is *"I need to understand all of that first."* You don't. The fastest readers do this: **read Part I, do the 10-minute first win in Ch. 4, pick one workflow from Part V that matches your day job, and just *start*.** Everything else is opt-in. You'll grow into sub-workflows the day your main canvas hits 60 nodes. You'll discover error handlers when your first workflow silently fails. The advanced patterns will pull *you* — you won't need to push toward them.
+> **Don't try to learn all of this before you start.** A 32-chapter table of contents can be intimidating — sub-workflows, error handlers, queueing, self-hosted Docker deployments, multi-step AI agents — and the natural reaction is *"I need to understand all of that first."* You don't. The fastest readers do this: **read Part I, do the 10-minute first win in Ch. 4, pick one workflow from Part V that matches your day job, and just *start*.** Everything else is opt-in. You'll grow into sub-workflows the day your main canvas hits 60 nodes. You'll discover error handlers when your first workflow silently fails. The advanced patterns will pull *you* — you won't need to push toward them.
 
 Reading paths, depending on who you are:
 
