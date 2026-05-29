@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: "Learn Automation Working Playbook",
+  title: "Learn Automation Working",
   description: "Shipping Real Workflows with n8n",
   base: '/n8n-playbook/',
   appearance: 'dark',
