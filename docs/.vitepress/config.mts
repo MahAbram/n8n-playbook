@@ -68,7 +68,7 @@ export default defineConfig({
           { text: '15. What happens when a node fails?', link: '/chapter-15' },
           { text: '16. How do you process 10,000 items without breaking everything?', link: '/chapter-16' },
           { text: '17. How do you shape data between nodes?', link: '/chapter-17' },
-          { text: '18. How do you call any API n8n doesn't already integrate with?', link: '/chapter-18' },
+          { text: '18. How do you call any API n8n does not already integrate with?', link: '/chapter-18' },
 
         ]
       },
